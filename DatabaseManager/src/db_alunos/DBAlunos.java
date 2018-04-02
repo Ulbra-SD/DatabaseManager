@@ -50,6 +50,7 @@ public class DBAlunos {
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
+						break;
 						
 					case "aluno": // Busca de aluno
 						int codBusca = Integer.parseInt(arrayReq[2]);
@@ -60,6 +61,18 @@ public class DBAlunos {
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
+						break;
+						
+					case "apagaaluno": // Exclusão de aluno
+						int codExclui = Integer.parseInt(arrayReq[2]);
+						
+						try {
+							String resposta = apagaAluno(codExclui);
+							saida.println(resposta);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						break;
 					}
 
 					if ("FIM".equals(requisicao)) {
@@ -82,6 +95,7 @@ public class DBAlunos {
 
 	// Método para cadastro de aluno
 	public static String incluiAluno(int id, String nome, ArrayList<Integer> lista) throws Exception {
+		System.out.println("Entrei na funcao de INCLUIR");
 		// JFrame msgRetorno = new JFrame();
 		BufferedWriter commit = new BufferedWriter(new FileWriter("student.data", true));
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
@@ -94,7 +108,6 @@ public class DBAlunos {
 
 		try {
 			while (true) {
-				// a = (Aluno)leitor.readObject();
 				linha = leitor.readLine();
 				a = gsonReader.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
@@ -127,7 +140,9 @@ public class DBAlunos {
 
 	}
 
+	// Método para busca de aluno
 	public static String buscaAluno(int id) throws Exception {
+		System.out.println("Entrei na funcao de BUSCAR");
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
 		Aluno a = null;
 		boolean alunoExiste = false;
@@ -137,8 +152,6 @@ public class DBAlunos {
 		
 		try {
 			while (true) {
-				System.out.println("Vou verificar se o aluno existe...");
-				// a = (Aluno)leitor.readObject();
 				linha = leitor.readLine();
 				a = gsonReader.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
@@ -160,5 +173,68 @@ public class DBAlunos {
 		leitor.close();
 		return resposta;
 
+	}
+
+	// Método para exclusão de aluno
+	public static String apagaAluno(int id) throws Exception {
+		System.out.println("Entrei na funcao de APAGAR");
+		ArrayList<String> aux = new ArrayList<String>();
+		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
+		BufferedReader leitor2 = new BufferedReader(new FileReader("student.data"));
+		Aluno a = null;
+		boolean alunoExiste = false;
+		String linha = "";
+		String resposta;
+		String gravar;
+		Gson gsonReader = new Gson();
+		Gson gsonWriter = new Gson();
+		
+		try {
+			while (true) {
+				linha = leitor.readLine();
+				a = gsonReader.fromJson(linha, Aluno.class);
+				if (a.idAluno == id) {
+					System.out.println("Blz! Aluno existe!");
+					alunoExiste = true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			//System.out.println("FIM DO ARQUIVO!");
+		}
+		
+		if(alunoExiste) {
+			// Passa as linhas dos registros para uma lista auxiliar, menos o registro a ser excluído
+			try {
+				while(leitor2.readLine() != null) {
+					System.out.println(linha);
+					linha = leitor2.readLine();
+					a = gsonReader.fromJson(linha, Aluno.class);
+					if (a.idAluno != id) {
+						System.out.println("Da classe: " + a.idAluno + "    Da var: " + id);
+						System.out.println("Vou incluir no aux o :" + linha);
+						aux.add(linha);
+					}
+				}
+				leitor2.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+			}
+			
+			// Grava os registros de volta no arquivo, sem a linha a ser excluída
+			FileWriter commit = new FileWriter("student.data", true);
+			for(int i=0; i<aux.size(); i++) {
+				System.out.println(aux.get(i));
+				commit.write(aux.get(i));
+			}
+			
+			commit.close();
+			resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
+		} else {
+			resposta = ("Aluno NÃO cadastrado!");
+		}
+		
+		leitor.close();
+		return resposta;
 	}
 }
