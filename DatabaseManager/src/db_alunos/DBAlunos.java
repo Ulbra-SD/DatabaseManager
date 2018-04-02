@@ -36,7 +36,7 @@ public class DBAlunos {
 					switch (tipoRequisicao) {
 
 					case "incluialuno": // Inclusão de aluno
-						int cod = Integer.parseInt(arrayReq[2]);
+						int codInclui = Integer.parseInt(arrayReq[2]);
 						String nome = arrayReq[3];
 						String[] arrayReqTurmas = arrayReq[4].split(",");
 						ArrayList<Integer> lista = new ArrayList<Integer>();
@@ -45,8 +45,17 @@ public class DBAlunos {
 						}
 
 						try {
-							System.out.println("Vou mandar incluir...");
-							String resposta = incluiAluno(cod, nome, lista);
+							String resposta = incluiAluno(codInclui, nome, lista);
+							saida.println(resposta);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					case "aluno": // Busca de aluno
+						int codBusca = Integer.parseInt(arrayReq[2]);
+						
+						try {
+							String resposta = buscaAluno(codBusca);
 							saida.println(resposta);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -85,12 +94,9 @@ public class DBAlunos {
 
 		try {
 			while (true) {
-				System.out.println("Vou verificar se o aluno existe...");
 				// a = (Aluno)leitor.readObject();
 				linha = leitor.readLine();
 				a = gsonReader.fromJson(linha, Aluno.class);
-				System.out.println("id recebida por param.: " + id);
-				System.out.println("id obj do arquivo: " + a.idAluno);
 				if (a.idAluno == id) {
 					System.out.println("Ei! Aluno existe!");
 					alunoExiste = true;
@@ -98,7 +104,7 @@ public class DBAlunos {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("FIM DO ARQUIVO!");
+			//System.out.println("FIM DO ARQUIVO!");
 		}
 
 		if (!alunoExiste) {
@@ -121,4 +127,38 @@ public class DBAlunos {
 
 	}
 
+	public static String buscaAluno(int id) throws Exception {
+		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
+		Aluno a = null;
+		boolean alunoExiste = false;
+		String linha = "";
+		String resposta;
+		Gson gsonReader = new Gson();
+		
+		try {
+			while (true) {
+				System.out.println("Vou verificar se o aluno existe...");
+				// a = (Aluno)leitor.readObject();
+				linha = leitor.readLine();
+				a = gsonReader.fromJson(linha, Aluno.class);
+				if (a.idAluno == id) {
+					System.out.println("Ei! Aluno existe!");
+					alunoExiste = true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			//System.out.println("FIM DO ARQUIVO!");
+		}
+		
+		if (alunoExiste) {
+			resposta = ("{idAluno: " + a.idAluno + ", nomeAluno: " + a.nomeAluno + ", turmas: " + a.listaDeTurmas + "}");
+		} else {
+			resposta = ("Aluno NÃO cadastrado!");
+		}
+
+		leitor.close();
+		return resposta;
+
+	}
 }
