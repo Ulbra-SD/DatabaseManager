@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 public class DBAlunos {
 
 	public static void main(String[] args) {
+		//TESTE do NOTEBOOK
 		File arqAlunos = new File("student.data");
 		try {
 			if (!arqAlunos.exists()) {
