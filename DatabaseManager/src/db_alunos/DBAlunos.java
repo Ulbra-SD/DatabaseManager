@@ -8,22 +8,21 @@ import com.google.gson.Gson;
 public class DBAlunos {
 
 	public static void main(String[] args) {
-		//TESTE do NOTEBOOK
 		File arqAlunos = new File("student.data");
 		try {
 			if (!arqAlunos.exists()) {
 				arqAlunos.createNewFile();
-				// System.out.println("Criei essa bosta!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		try {
-			ServerSocket server = new ServerSocket(6543);
+			ServerSocket server = new ServerSocket(1236);
 			System.out.println("DBAlunos aguardando conexão...");
 			try {
 				Socket client = server.accept();
+				System.out.println("Conexão estabelecida!");
 				BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				PrintStream saida = new PrintStream(client.getOutputStream());
 				String requisicao;
@@ -63,6 +62,15 @@ public class DBAlunos {
 						}
 						break;
 						
+					case "alunos": // Listagem de alunos
+						try {
+							String resposta = listaAlunos();
+							saida.println(resposta);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						break;
+						
 					case "apagaaluno": // Exclusão de aluno
 						int codExclui = Integer.parseInt(arrayReq[2]);
 						
@@ -73,12 +81,13 @@ public class DBAlunos {
 							e.printStackTrace();
 						}
 						break;
+						
+					default: System.out.println("Comando Invalido!"); break;
 					}
 
 					if ("FIM".equals(requisicao)) {
 						break;
 					}
-					// saida.println("Req. recbida: " + requisicao);
 				}
 				entrada.close();
 				saida.close();
@@ -95,8 +104,6 @@ public class DBAlunos {
 
 	// Método para cadastro de aluno
 	public static String incluiAluno(int id, String nome, ArrayList<Integer> lista) throws Exception {
-		System.out.println("Entrei na funcao de INCLUIR");
-		// JFrame msgRetorno = new JFrame();
 		BufferedWriter commit = new BufferedWriter(new FileWriter("student.data", true));
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
 		Aluno a;
@@ -123,13 +130,10 @@ public class DBAlunos {
 		if (!alunoExiste) {
 			System.out.println("De boa. Aluno não existe.");
 			Aluno aluno = new Aluno(id, nome, lista);
-			// commit.writeObject(aluno);
 			String gravar = gsonWriter.toJson(aluno);
 			commit.append(gravar + "\n");
 			commit.close();
 
-			// JOptionPane.showMessageDialog(msgRetorno, "{codRetorno: 0, descricaoRetorno:
-			// Requisicao OK}");
 			resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
 		} else {
 			resposta = ("{codRetorno: 1, descricaoRetorno: Registro já cadastrado}");
@@ -142,7 +146,6 @@ public class DBAlunos {
 
 	// Método para busca de aluno
 	public static String buscaAluno(int id) throws Exception {
-		System.out.println("Entrei na funcao de BUSCAR");
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
 		Aluno a = null;
 		boolean alunoExiste = false;
@@ -155,7 +158,6 @@ public class DBAlunos {
 				linha = leitor.readLine();
 				a = gsonReader.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
-					System.out.println("Ei! Aluno existe!");
 					alunoExiste = true;
 					break;
 				}
@@ -175,26 +177,44 @@ public class DBAlunos {
 
 	}
 
+	// Método para listagem de TODOS os aluno
+	public static String listaAlunos() throws Exception {
+		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
+		String linha = "";
+		String resposta = ("{   \"alunos\": [   ");
+		
+		try {
+			while (true) {
+				linha = leitor.readLine();
+				if (linha == null)
+					break;
+				resposta += (linha + ",  ");
+			}
+		} catch (Exception e) {
+			//System.out.println("FIM DO ARQUIVO!");
+		}
+		
+		resposta += ("   ]   }");
+		
+		leitor.close();
+		return resposta;
+	}
+	
 	// Método para exclusão de aluno
 	public static String apagaAluno(int id) throws Exception {
-		System.out.println("Entrei na funcao de APAGAR");
 		ArrayList<String> aux = new ArrayList<String>();
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
-		BufferedReader leitor2 = new BufferedReader(new FileReader("student.data"));
 		Aluno a = null;
 		boolean alunoExiste = false;
 		String linha = "";
 		String resposta;
-		String gravar;
 		Gson gsonReader = new Gson();
-		Gson gsonWriter = new Gson();
 		
 		try {
 			while (true) {
 				linha = leitor.readLine();
 				a = gsonReader.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
-					System.out.println("Blz! Aluno existe!");
 					alunoExiste = true;
 					break;
 				}
@@ -205,14 +225,15 @@ public class DBAlunos {
 		
 		if(alunoExiste) {
 			// Passa as linhas dos registros para uma lista auxiliar, menos o registro a ser excluído
+			BufferedReader leitor2 = new BufferedReader(new FileReader("student.data"));
 			try {
-				while(leitor2.readLine() != null) {
-					System.out.println(linha);
+				while(true) {
 					linha = leitor2.readLine();
+					if (linha == null)
+						break;
+					System.out.println(linha);
 					a = gsonReader.fromJson(linha, Aluno.class);
 					if (a.idAluno != id) {
-						System.out.println("Da classe: " + a.idAluno + "    Da var: " + id);
-						System.out.println("Vou incluir no aux o :" + linha);
 						aux.add(linha);
 					}
 				}
@@ -222,10 +243,9 @@ public class DBAlunos {
 			}
 			
 			// Grava os registros de volta no arquivo, sem a linha a ser excluída
-			FileWriter commit = new FileWriter("student.data", true);
+			FileWriter commit = new FileWriter("student.data");
 			for(int i=0; i<aux.size(); i++) {
-				System.out.println(aux.get(i));
-				commit.write(aux.get(i));
+				commit.write(aux.get(i) + "\n");
 			}
 			
 			commit.close();
