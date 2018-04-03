@@ -1,11 +1,8 @@
 package db_alunos;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import db_turmas.Turma;
 
-public class Aluno implements Serializable {
-	private static final long serialVersionUID = 1L;
+public class Aluno {
 
 	public int idAluno;
 	public String nomeAluno;
@@ -16,4 +13,30 @@ public class Aluno implements Serializable {
 		this.nomeAluno = nome;
 		this.listaDeTurmas = lista;
 	}
+
+	public int getIdAluno() {
+		return idAluno;
+	}
+
+	public void setIdAluno(int idAluno) {
+		this.idAluno = idAluno;
+	}
+
+	public String getNomeAluno() {
+		return nomeAluno;
+	}
+
+	public void setNomeAluno(String nomeAluno) {
+		this.nomeAluno = nomeAluno;
+	}
+
+	public ArrayList<Integer> getListaDeTurmas() {
+		return listaDeTurmas;
+	}
+
+	public void setListaDeTurmas(ArrayList<Integer> listaDeTurmas) {
+		this.listaDeTurmas = listaDeTurmas;
+	}
+	
+	
 }

@@ -5,6 +5,8 @@ import java.net.*;
 import java.util.*;
 import com.google.gson.Gson;
 
+import config.*;
+
 public class DBAlunos {
 
 	public static void main(String[] args) {
@@ -110,15 +112,13 @@ public class DBAlunos {
 		boolean alunoExiste = false;
 		String linha = "";
 		String resposta;
-		Gson gsonReader = new Gson();
-		Gson gsonWriter = new Gson();
+		Gson gson = new Gson();
 
 		try {
 			while (true) {
 				linha = leitor.readLine();
-				a = gsonReader.fromJson(linha, Aluno.class);
+				a = gson.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
-					System.out.println("Ei! Aluno existe!");
 					alunoExiste = true;
 					break;
 				}
@@ -128,15 +128,15 @@ public class DBAlunos {
 		}
 
 		if (!alunoExiste) {
-			System.out.println("De boa. Aluno não existe.");
 			Aluno aluno = new Aluno(id, nome, lista);
-			String gravar = gsonWriter.toJson(aluno);
+			String gravar = gson.toJson(aluno);
 			commit.append(gravar + "\n");
 			commit.close();
-
-			resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
+			
+			resposta = gson.toJson(CodigosRetorno.requisicaoOK);
+			//resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
 		} else {
-			resposta = ("{codRetorno: 1, descricaoRetorno: Registro já cadastrado}");
+			resposta = gson.toJson(CodigosRetorno.erroJaCadastrado);
 		}
 
 		leitor.close();
@@ -151,12 +151,12 @@ public class DBAlunos {
 		boolean alunoExiste = false;
 		String linha = "";
 		String resposta;
-		Gson gsonReader = new Gson();
+		Gson gson = new Gson();
 		
 		try {
 			while (true) {
 				linha = leitor.readLine();
-				a = gsonReader.fromJson(linha, Aluno.class);
+				a = gson.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
 					alunoExiste = true;
 					break;
@@ -167,9 +167,9 @@ public class DBAlunos {
 		}
 		
 		if (alunoExiste) {
-			resposta = ("{idAluno: " + a.idAluno + ", nomeAluno: " + a.nomeAluno + ", turmas: " + a.listaDeTurmas + "}");
+			resposta = gson.toJson(a);
 		} else {
-			resposta = ("Aluno NÃO cadastrado!");
+			resposta = gson.toJson(CodigosRetorno.erroNaoEncontrado);
 		}
 
 		leitor.close();
@@ -177,7 +177,7 @@ public class DBAlunos {
 
 	}
 
-	// Método para listagem de TODOS os aluno
+	// Método para listagem de TODOS os alunos
 	public static String listaAlunos() throws Exception {
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
 		String linha = "";
@@ -208,12 +208,12 @@ public class DBAlunos {
 		boolean alunoExiste = false;
 		String linha = "";
 		String resposta;
-		Gson gsonReader = new Gson();
+		Gson gson = new Gson();
 		
 		try {
 			while (true) {
 				linha = leitor.readLine();
-				a = gsonReader.fromJson(linha, Aluno.class);
+				a = gson.fromJson(linha, Aluno.class);
 				if (a.idAluno == id) {
 					alunoExiste = true;
 					break;
@@ -231,8 +231,7 @@ public class DBAlunos {
 					linha = leitor2.readLine();
 					if (linha == null)
 						break;
-					System.out.println(linha);
-					a = gsonReader.fromJson(linha, Aluno.class);
+					a = gson.fromJson(linha, Aluno.class);
 					if (a.idAluno != id) {
 						aux.add(linha);
 					}
@@ -249,9 +248,9 @@ public class DBAlunos {
 			}
 			
 			commit.close();
-			resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
+			resposta = gson.toJson(CodigosRetorno.requisicaoOK);
 		} else {
-			resposta = ("Aluno NÃO cadastrado!");
+			resposta = gson.toJson(CodigosRetorno.erroNaoEncontrado);
 		}
 		
 		leitor.close();

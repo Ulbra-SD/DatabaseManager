@@ -12,4 +12,22 @@ public class Turma implements Serializable {
 		this.idTurma = id;
 		this.nomeTurma = nome;
 	}
+
+	public int getIdTurma() {
+		return idTurma;
+	}
+
+	public void setIdTurma(int idTurma) {
+		this.idTurma = idTurma;
+	}
+
+	public String getNomeTurma() {
+		return nomeTurma;
+	}
+
+	public void setNomeTurma(String nomeTurma) {
+		this.nomeTurma = nomeTurma;
+	}
+	
+	
 }

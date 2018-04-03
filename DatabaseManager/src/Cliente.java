@@ -10,7 +10,7 @@ public class Cliente {
 		//DBAlunos dbAlunos = new DBAlunos();
 		//DBTurmas dbTurmas = new DBTurmas();
 		try {
-			Socket client = new Socket("localhost", 1236);
+			Socket client = new Socket("localhost", 1237);
 			BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			PrintStream saida = new PrintStream(client.getOutputStream());
 			Scanner teclado = new Scanner(System.in);
@@ -21,12 +21,18 @@ public class Cliente {
 				String[] arrayReq = requisicao.split("/");
 				String tipoRequisicao = arrayReq[1].toLowerCase();
 
-				if (tipoRequisicao.equals("incluialuno") || tipoRequisicao.equals("apagaaluno") || tipoRequisicao.equals("aluno")
+				/*if (tipoRequisicao.equals("incluialuno") || tipoRequisicao.equals("apagaaluno") || tipoRequisicao.equals("aluno")
 						|| tipoRequisicao.equals("alunos")) {
 					System.out.println("A enviar: " + requisicao);
 					saida.println(requisicao);
-				}
+				}*/
 
+				if (tipoRequisicao.equals("incluiturma") || tipoRequisicao.equals("apagaturma") || tipoRequisicao.equals("turma")
+						|| tipoRequisicao.equals("turmas")) {
+					System.out.println("A enviar: " + requisicao);
+					saida.println(requisicao);
+				}
+				
 				/*switch (tipoRequisicao) {
 
 				case "incluialuno": // Inclusão de aluno
