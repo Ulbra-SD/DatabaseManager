@@ -17,4 +17,7 @@ public class CodigosRetorno {
 	// Quando se tenta consultar um registro que não existe
 	public static Retorno erroNaoEncontrado = new Retorno(4, "Registro nao encontrado");
 
+	// Quando é feita uma requisição que o servidor não entende
+	public static Retorno erroReqInvalida = new Retorno(5, "Requisicao Invalida");
+
 }

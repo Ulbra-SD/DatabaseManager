@@ -39,11 +39,6 @@ public class DBTurmas {
 					case "incluiturma": // Inclusão de turma
 						int codInclui = Integer.parseInt(arrayReq[2]);
 						String nome = arrayReq[3];
-						//String[] arrayReqTurmas = arrayReq[4].split(",");
-						//ArrayList<Integer> lista = new ArrayList<Integer>();
-						//for (String i : arrayReqTurmas) {
-						//	lista.add(Integer.parseInt(i));
-						//}
 
 						try {
 							String resposta = incluiTurma(codInclui, nome);
