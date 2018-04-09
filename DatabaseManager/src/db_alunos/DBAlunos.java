@@ -21,85 +21,88 @@ public class DBAlunos {
 		}
 
 		try {
-			ServerSocket server = new ServerSocket(1236);
-			System.out.println("DBAlunos aguardando conexão...");
-			try {
-				Socket client = server.accept();
-				System.out.println("Conexão estabelecida!");
-				BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				PrintStream saida = new PrintStream(client.getOutputStream());
-				String requisicao;
+			while (true) {
+				ServerSocket server = new ServerSocket(1236);
+				System.out.println("DBAlunos aguardando conexão...");
+				try {
+					Socket client = server.accept();
+					System.out.println("Conexão estabelecida!");
+					BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
+					PrintStream saida = new PrintStream(client.getOutputStream());
+					String requisicao;
 
-				while (true) {
-					requisicao = entrada.readLine();
-					String[] arrayReq = requisicao.split("/");
-					String tipoRequisicao = arrayReq[1].toLowerCase();
+					while (true) {
+						requisicao = entrada.readLine();
+						String[] arrayReq = requisicao.split("/");
+						String tipoRequisicao = arrayReq[1].toLowerCase();
 
-					switch (tipoRequisicao) {
+						switch (tipoRequisicao) {
 
-					case "incluialuno": // Inclusão de aluno
-						int codInclui = Integer.parseInt(arrayReq[2]);
-						String nome = arrayReq[3];
-						String[] arrayReqTurmas = arrayReq[4].split(",");
-						ArrayList<Integer> lista = new ArrayList<Integer>();
-						for (String i : arrayReqTurmas) {
-							lista.add(Integer.parseInt(i));
+						case "incluialuno": // Inclusão de aluno
+							int codInclui = Integer.parseInt(arrayReq[2]);
+							String nome = arrayReq[3];
+							String[] arrayReqTurmas = arrayReq[4].split(",");
+							ArrayList<Integer> lista = new ArrayList<Integer>();
+							for (String i : arrayReqTurmas) {
+								lista.add(Integer.parseInt(i));
+							}
+
+							try {
+								String resposta = incluiAluno(codInclui, nome, lista);
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						case "aluno": // Busca de aluno
+							int codBusca = Integer.parseInt(arrayReq[2]);
+
+							try {
+								String resposta = buscaAluno(codBusca);
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						case "alunos": // Listagem de alunos
+							try {
+								String resposta = listaAlunos();
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						case "apagaaluno": // Exclusão de aluno
+							int codExclui = Integer.parseInt(arrayReq[2]);
+
+							try {
+								String resposta = apagaAluno(codExclui);
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						default:
+							System.out.println("Comando Invalido!");
+							break;
 						}
 
-						try {
-							String resposta = incluiAluno(codInclui, nome, lista);
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
+						if ("FIM".equals(requisicao)) {
+							break;
 						}
-						break;
-
-					case "aluno": // Busca de aluno
-						int codBusca = Integer.parseInt(arrayReq[2]);
-
-						try {
-							String resposta = buscaAluno(codBusca);
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						break;
-
-					case "alunos": // Listagem de alunos
-						try {
-							String resposta = listaAlunos();
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						break;
-
-					case "apagaaluno": // Exclusão de aluno
-						int codExclui = Integer.parseInt(arrayReq[2]);
-
-						try {
-							String resposta = apagaAluno(codExclui);
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						break;
-
-					default:
-						System.out.println("Comando Invalido!");
-						break;
 					}
+					client.close();
+					entrada.close();
+					saida.close();
 
-					if ("FIM".equals(requisicao)) {
-						break;
-					}
+				} catch (Exception e) {
+					// TODO: handle exception
 				}
-				entrada.close();
-				saida.close();
-				client.close();
 				server.close();
-			} catch (Exception e) {
-				// TODO: handle exception
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -119,7 +122,7 @@ public class DBAlunos {
 		String linha = "";
 		String resposta;
 		Gson gson = new Gson();
-		
+
 		try {
 			while (true) {
 				linha = leitorAlunos.readLine();
@@ -152,7 +155,6 @@ public class DBAlunos {
 
 		// --------------------------------------
 		if (!alunoExiste && turmaExiste) {
-			System.out.println("Vou GRAVAR!!!");
 			Aluno aluno = new Aluno(id, nome, lista);
 			String gravar = gson.toJson(aluno);
 			commit.append(gravar + "\n");

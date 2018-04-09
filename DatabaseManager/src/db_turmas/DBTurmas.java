@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import com.google.gson.Gson;
 
 import config.*;
+import db_alunos.Aluno;
+import db_alunos.DBAlunos;
 
 public class DBTurmas {
 
@@ -20,78 +22,83 @@ public class DBTurmas {
 		}
 
 		try {
-			ServerSocket server = new ServerSocket(1237);
-			System.out.println("DBTurmas aguardando conexão...");
-			try {
-				Socket client = server.accept();
-				System.out.println("Conexão estabelecida!");
-				BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				PrintStream saida = new PrintStream(client.getOutputStream());
-				String requisicao;
+			while (true) {
+				ServerSocket server = new ServerSocket(1237);
+				System.out.println("DBTurmas aguardando conexão...");
+				try {
+					Socket client = server.accept();
+					System.out.println("Conexão estabelecida!");
+					BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
+					PrintStream saida = new PrintStream(client.getOutputStream());
+					String requisicao;
 
-				while (true) {
-					requisicao = entrada.readLine();
-					String[] arrayReq = requisicao.split("/");
-					String tipoRequisicao = arrayReq[1].toLowerCase();
+					while (true) {
+						requisicao = entrada.readLine();
+						String[] arrayReq = requisicao.split("/");
+						String tipoRequisicao = arrayReq[1].toLowerCase();
 
-					switch (tipoRequisicao) {
+						switch (tipoRequisicao) {
 
-					case "incluiturma": // Inclusão de turma
-						int codInclui = Integer.parseInt(arrayReq[2]);
-						String nome = arrayReq[3];
+						case "incluiturma": // Inclusão de turma
+							int codInclui = Integer.parseInt(arrayReq[2]);
+							String nome = arrayReq[3];
 
-						try {
-							String resposta = incluiTurma(codInclui, nome);
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
+							try {
+								String resposta = incluiTurma(codInclui, nome);
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						case "turma": // Busca de turma
+							int codBusca = Integer.parseInt(arrayReq[2]);
+
+							try {
+								String resposta = buscaTurma(codBusca);
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						case "turmas": // Listagem de alunos
+							try {
+								String resposta = listaTurmas();
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						case "apagaturma": // Exclusão de turma
+							int codExclui = Integer.parseInt(arrayReq[2]);
+
+							try {
+								String resposta = apagaTurma(codExclui);
+								saida.println(resposta);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+
+						default:
+							System.out.println("Comando Invalido!");
+							break;
 						}
-						break;
-						
-					case "turma": // Busca de turma
-						int codBusca = Integer.parseInt(arrayReq[2]);
-						
-						try {
-							String resposta = buscaTurma(codBusca);
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
+
+						if ("FIM".equals(requisicao)) {
+							break;
 						}
-						break;
-						
-					case "turmas": // Listagem de alunos
-						try {
-							String resposta = listaTurmas();
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						break;
-						
-					case "apagaturma": // Exclusão de turma
-						int codExclui = Integer.parseInt(arrayReq[2]);
-						
-						try {
-							String resposta = apagaTurma(codExclui);
-							saida.println(resposta);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						break;
-						
-					default: System.out.println("Comando Invalido!"); break;
 					}
+					entrada.close();
+					saida.close();
+					client.close();
 
-					if ("FIM".equals(requisicao)) {
-						break;
-					}
+				} catch (Exception e) {
+					// TODO: handle exception
 				}
-				entrada.close();
-				saida.close();
-				client.close();
 				server.close();
-			} catch (Exception e) {
-				// TODO: handle exception
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -119,7 +126,7 @@ public class DBTurmas {
 				}
 			}
 		} catch (Exception e) {
-			//System.out.println("FIM DO ARQUIVO!");
+			// System.out.println("FIM DO ARQUIVO!");
 		}
 
 		if (!turmaExiste) {
@@ -127,9 +134,9 @@ public class DBTurmas {
 			String gravar = gson.toJson(turma);
 			commit.append(gravar + "\n");
 			commit.close();
-			
+
 			resposta = gson.toJson(CodigosRetorno.requisicaoOK);
-			//resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
+			// resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
 		} else {
 			resposta = gson.toJson(CodigosRetorno.erroJaCadastrado);
 		}
@@ -147,7 +154,7 @@ public class DBTurmas {
 		String linha = "";
 		String resposta;
 		Gson gson = new Gson();
-		
+
 		try {
 			while (true) {
 				linha = leitor.readLine();
@@ -158,9 +165,9 @@ public class DBTurmas {
 				}
 			}
 		} catch (Exception e) {
-			//System.out.println("FIM DO ARQUIVO!");
+			// System.out.println("FIM DO ARQUIVO!");
 		}
-		
+
 		if (turmaExiste) {
 			resposta = gson.toJson(t);
 		} else {
@@ -177,7 +184,7 @@ public class DBTurmas {
 		BufferedReader leitor = new BufferedReader(new FileReader("class.data"));
 		String linha = "";
 		String resposta = ("{   \"turmas\": [   ");
-		
+
 		try {
 			while (true) {
 				linha = leitor.readLine();
@@ -186,15 +193,15 @@ public class DBTurmas {
 				resposta += (linha + ",  ");
 			}
 		} catch (Exception e) {
-			//System.out.println("FIM DO ARQUIVO!");
+			// System.out.println("FIM DO ARQUIVO!");
 		}
-		
+
 		resposta += ("   ]   }");
-		
+
 		leitor.close();
 		return resposta;
 	}
-	
+
 	// Método para exclusão de turma
 	public static String apagaTurma(int id) throws Exception {
 		ArrayList<String> aux = new ArrayList<String>();
@@ -204,7 +211,7 @@ public class DBTurmas {
 		String linha = "";
 		String resposta;
 		Gson gson = new Gson();
-		
+
 		try {
 			while (true) {
 				linha = leitor.readLine();
@@ -215,14 +222,15 @@ public class DBTurmas {
 				}
 			}
 		} catch (Exception e) {
-			//System.out.println("FIM DO ARQUIVO!");
+			// System.out.println("FIM DO ARQUIVO!");
 		}
-		
-		if(turmaExiste) {
-			// Passa as linhas dos registros para uma lista auxiliar, menos o registro a ser excluído
+
+		if (turmaExiste) {
+			// Passa as linhas dos registros para uma lista auxiliar, menos o registro a ser
+			// excluído
 			BufferedReader leitor2 = new BufferedReader(new FileReader("class.data"));
 			try {
-				while(true) {
+				while (true) {
 					linha = leitor2.readLine();
 					if (linha == null)
 						break;
@@ -235,21 +243,52 @@ public class DBTurmas {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 			}
-			
+
 			// Grava os registros de volta no arquivo, sem a linha a ser excluída
 			FileWriter commit = new FileWriter("class.data");
-			for(int i=0; i<aux.size(); i++) {
+			for (int i = 0; i < aux.size(); i++) {
 				commit.write(aux.get(i) + "\n");
 			}
-			
+
 			commit.close();
+
+			// Apaga a turma excluída do registro de todos os alunos que estão matriculados
+			// nela
+			apagaTurmaAlunos(id);
+
 			resposta = gson.toJson(CodigosRetorno.requisicaoOK);
 		} else {
 			resposta = gson.toJson(CodigosRetorno.erroNaoEncontrado);
 		}
-		
+
 		leitor.close();
 		return resposta;
+	}
+
+	// Apaga a turma excluída do registro de todos os alunos que estão matriculados
+	// nela
+	public static void apagaTurmaAlunos(int id) throws Exception {
+		BufferedReader leitorAlunos = new BufferedReader(new FileReader("student.data"));
+		Aluno a = null;
+		String linha = "";
+		Gson gson = new Gson();
+		Integer idT = id;
+
+		try {
+			while (true) {
+				linha = leitorAlunos.readLine();
+				a = gson.fromJson(linha, Aluno.class);
+				if (a.listaDeTurmas.contains(idT)) {
+					a.listaDeTurmas.remove(idT);
+
+					DBAlunos.apagaAluno(a.idAluno);
+					DBAlunos.incluiAluno(a.idAluno, a.nomeAluno, a.listaDeTurmas);
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		leitorAlunos.close();
 	}
 
 }
