@@ -10,7 +10,7 @@ public class Cliente {
 		// DBAlunos dbAlunos = new DBAlunos();
 		// DBTurmas dbTurmas = new DBTurmas();
 		try {
-			Socket client = new Socket("localhost", 1235);
+			Socket client = new Socket("localhost", 1234);
 			BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			PrintStream saida = new PrintStream(client.getOutputStream());
 
