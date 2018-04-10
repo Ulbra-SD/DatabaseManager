@@ -45,6 +45,8 @@ public class Cache {
 							saidaSGDB.println(requisicao);
 							String resposta = entradaSGDB.readLine();
 							
+							System.out.println("Recebi a resposta: " + resposta);
+							
 							saida.println(resposta);
 
 							entradaSGDB.close();
@@ -52,6 +54,14 @@ public class Cache {
 							clientSGDB.close();
 						} else {
 							System.out.println("...REQUISICAO DE BUSCA...");
+							
+							saidaSGDB.println(requisicao);
+							String resposta = entradaSGDB.readLine();
+							saida.println(resposta);
+
+							entradaSGDB.close();
+							saidaSGDB.close();
+							clientSGDB.close();
 						}
 						// } catch (Exception e) {
 						// // TODO: handle exception

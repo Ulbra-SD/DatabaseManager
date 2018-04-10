@@ -3,6 +3,7 @@ package sgbd;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import com.google.gson.Gson;
 
 import config.*;
 
@@ -74,7 +75,9 @@ public class Manager {
 								// TODO: handle exception
 							}
 						} else {
-							saida.println(CodigosRetorno.erroReqInvalida);
+							Gson gson = new Gson();
+							String resposta = gson.toJson(CodigosRetorno.erroReqInvalida);
+							saida.println(resposta);
 						}
 
 						if ("FIM".equals(requisicao)) {

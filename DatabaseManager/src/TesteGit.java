@@ -1,93 +1,19 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.ArrayList;
-
-import com.google.gson.Gson;
-
-import db_alunos.Aluno;
-import db_alunos.DBAlunos;
-import db_turmas.Turma;
+import java.sql.Timestamp;
 
 public class TesteGit {
 
 	public static void main(String[] args) throws Exception {
-		BufferedReader leitorAlunos = new BufferedReader(new FileReader("student.data"));
-		Aluno a = null;
-		String linha = "";
-		String gravar = "";
-		Gson gson = new Gson();
 
-		//int id = 4;
-		Integer n = 3;
-
-		try {
-			while (true) {
-				linha = leitorAlunos.readLine();
-				a = gson.fromJson(linha, Aluno.class);
-				//if (a.idAluno == id) {
-				//	System.out.println("Entrei no if");
-					if (a.listaDeTurmas.contains(n)) {
-						System.out.println("Entrei no outro if");
-						a.listaDeTurmas.remove(n);
-						//gravar = gson.toJson(a);
-						
-						System.out.println(a.idAluno + a.nomeAluno + a.listaDeTurmas);
-						
-						DBAlunos.apagaAluno(a.idAluno);
-						DBAlunos.incluiAluno(a.idAluno, a.nomeAluno, a.listaDeTurmas);
-					}
-
-//					System.out.println("ID: " + a.idAluno);
-//					System.out.println("Nome: " + a.nomeAluno);
-//					System.out.print("Turmas: ");
-//					for (Integer i : a.listaDeTurmas) {
-//						System.out.print(i + " ");
-//					}
-//					System.out.println("\n");
-//					break;
-				//}
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
+		Timestamp data = new Timestamp(System.currentTimeMillis());
+		System.out.println("Data: " + data);
+		
+		Timestamp data2 = new Timestamp(System.currentTimeMillis());
+		System.out.println("Data: " + data2);
+		
+		
+		if (data.before(data2)) {
+			System.out.println("A data 1 é anterior à data 2");
 		}
-
-//		// Passa as linhas dos registros para uma lista auxiliar, menos o registro a ser
-//		// excluído
-//		ArrayList<String> aux = new ArrayList<String>();
-//		BufferedReader leitor2 = new BufferedReader(new FileReader("student.data"));
-//		Aluno a2;
-//		try {
-//			linha = "";
-//			int c = 0;
-//			while (true) {
-//				linha = leitor2.readLine();
-//				if (linha == null)
-//					break;
-//				a2 = gson.fromJson(linha, Aluno.class);
-//				if (a2.idAluno != id) {
-//					System.out.println("Vou botar..." + ++c);
-//					aux.add(linha);
-//				}
-//			}
-//			leitor2.close();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//		}
-//
-//		// Grava os registros de volta no arquivo, sem a linha a ser excluída
-//		FileWriter commit = new FileWriter("student.data", true);
-//		for (int i = 0; i < aux.size(); i++) {
-//			System.out.println("Gravando..." + i);
-//			commit.write(aux.get(i) + "\n");
-//		}
-		
-		
-		
-//		System.out.println("Gravar: " + gravar);
-//		commit.append(gravar + "\n");
-
 	}
 
 }
