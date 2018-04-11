@@ -5,6 +5,8 @@ import java.util.*;
 import java.net.*;
 import com.google.gson.Gson;
 
+import db_alunos.*;
+import db_turmas.*;
 import config.*;
 
 public class Manager {
@@ -12,6 +14,7 @@ public class Manager {
 	public static void main(String[] args) {
 		ArrayList<String> reqAlunos = new ArrayList<String>();
 		ArrayList<String> reqTurmas = new ArrayList<String>();
+		Gson gson = new Gson();
 
 		reqAlunos.add("incluialuno");
 		reqAlunos.add("apagaaluno");
@@ -33,49 +36,72 @@ public class Manager {
 					BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
 					PrintStream saida = new PrintStream(client.getOutputStream());
 					String requisicao;
-					
+
 					while (true) {
 						requisicao = entrada.readLine();
 						String[] arrayReq = requisicao.split("/");
 						String tipoRequisicao = arrayReq[1].toLowerCase();
+						Aluno a;
+						//Turma t;
 
-						if (reqAlunos.contains(tipoRequisicao)) {
+						if (reqAlunos.contains(tipoRequisicao)) { // Banco Alunos
 							try {
-								Socket clientDB = new Socket("localhost", 1236);
-								BufferedReader entradaDB = new BufferedReader(new InputStreamReader(clientDB.getInputStream()));
-								PrintStream saidaDB = new PrintStream(clientDB.getOutputStream());
-								
-								saidaDB.println(requisicao);
-								String resposta = entradaDB.readLine();
-								
+								Socket clientDBA = new Socket("localhost", 1236);
+								BufferedReader entradaDBA = new BufferedReader(new InputStreamReader(clientDBA.getInputStream()));
+								PrintStream saidaDBA = new PrintStream(clientDBA.getOutputStream());
+
+								saidaDBA.println(requisicao);
+								String resposta = entradaDBA.readLine();
+
+								a = gson.fromJson(resposta, Aluno.class);
+
+								if (tipoRequisicao.equals("aluno")) {	// Busca os dados de cada turma do aluno
+									try {
+										Socket clientDBT = new Socket("localhost", 1237);
+										BufferedReader entradaDBT = new BufferedReader(new InputStreamReader(clientDBT.getInputStream()));
+										PrintStream saidaDBT = new PrintStream(clientDBT.getOutputStream());
+										String reqT = "";
+										String respT = "";
+										
+										for (Integer i : a.listaDeTurmas) {
+											reqT = ("/turma/" + i);
+											System.out.println("Buscando..." + reqT);
+											saidaDBT.println(reqT);
+											respT = entradaDBT.readLine();
+											
+										}
+
+									} catch (Exception e) {
+										// TODO: handle exception
+									}
+								}
 								saida.println(resposta);
-								
-								entradaDB.close();
-								saidaDB.close();
-								clientDB.close();
+
+								entradaDBA.close();
+								saidaDBA.close();
+								clientDBA.close();
 							} catch (Exception e) {
 								// TODO: handle exception
 							}
-							
-						} else if (reqTurmas.contains(tipoRequisicao)) {
+
+						} else if (reqTurmas.contains(tipoRequisicao)) { // Banco Turmas
 							try {
-								Socket clientDB = new Socket("localhost", 1237);
-								BufferedReader entradaDB = new BufferedReader(new InputStreamReader(clientDB.getInputStream()));
-								PrintStream saidaDB = new PrintStream(clientDB.getOutputStream());
-								
-								saidaDB.println(requisicao);
-								String resposta = entradaDB.readLine();
-								
-								saida.println(resposta);
-								
-								entradaDB.close();
-								saidaDB.close();
-								clientDB.close();
+								Socket clientDBT = new Socket("localhost", 1237);
+								BufferedReader entradaDBT = new BufferedReader(new InputStreamReader(clientDBT.getInputStream()));
+								PrintStream saidaDBT = new PrintStream(clientDBT.getOutputStream());
+
+								saidaDBT.println(requisicao);
+								String resposta = entradaDBT.readLine();
+
+								// saida.println(resposta);
+
+								entradaDBT.close();
+								saidaDBT.close();
+								clientDBT.close();
 							} catch (Exception e) {
 								// TODO: handle exception
 							}
 						} else {
-							Gson gson = new Gson();
 							String resposta = gson.toJson(CodigosRetorno.erroReqInvalida);
 							saida.println(resposta);
 						}
@@ -87,7 +113,7 @@ public class Manager {
 					client.close();
 					entrada.close();
 					saida.close();
-					
+
 				} catch (Exception e) {
 					// TODO: handle exception
 				}
