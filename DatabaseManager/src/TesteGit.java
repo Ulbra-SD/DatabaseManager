@@ -1,18 +1,23 @@
-import java.sql.Timestamp;
 
 public class TesteGit {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws InterruptedException {
 
-		Timestamp data = new Timestamp(System.currentTimeMillis());
-		System.out.println("Data: " + data);
+		long cacheTimeout = 10002;
+		long millis = System.currentTimeMillis();
 		
-		Timestamp data2 = new Timestamp(System.currentTimeMillis());
-		System.out.println("Data: " + data2);
+		Thread.sleep(10000);
 		
+		long millis2 = System.currentTimeMillis();
 		
-		if (data.before(data2)) {
-			System.out.println("A data 1 é anterior à data 2");
+		if((millis2 - millis) >= cacheTimeout) {
+			System.out.println("Primeiro: " + millis);
+			System.out.println("Atual: " + millis2);
+			System.out.println("Cache expirou!!");
+		} else {
+			System.out.println("Primeiro: " + millis);
+			System.out.println("Atual: " + millis2);
+			System.out.println("Cache ainda válido!");
 		}
 	}
 

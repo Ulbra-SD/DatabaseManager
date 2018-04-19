@@ -1,7 +1,8 @@
 package db_turmas;
 
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import com.google.gson.Gson;
 
@@ -10,100 +11,37 @@ import db_alunos.Aluno;
 import db_alunos.DBAlunos;
 
 public class DBTurmas {
+	
+	ServerSocket server;
+	boolean shouldRun = true;
 
 	public static void main(String[] args) {
+		
 		File arqAlunos = new File("class.data");
-		try {
-			if (!arqAlunos.exists()) {
+		if (!arqAlunos.exists()) {
+			try {
 				arqAlunos.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-
+		
+		new DBTurmas();
+		
+	}
+	
+	public DBTurmas() {
 		try {
-			while (true) {
-				ServerSocket server = new ServerSocket(1237);
-				System.out.println("DBTurmas aguardando conexão...");
-				try {
-					Socket client = server.accept();
-					System.out.println("Conexão estabelecida!");
-					BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
-					PrintStream saida = new PrintStream(client.getOutputStream());
-					String requisicao;
-
-					while (true) {
-						requisicao = entrada.readLine();
-						String[] arrayReq = requisicao.split("/");
-						String tipoRequisicao = arrayReq[1].toLowerCase();
-
-						switch (tipoRequisicao) {
-
-						case "incluiturma": // Inclusão de turma
-							int codInclui = Integer.parseInt(arrayReq[2]);
-							String nome = arrayReq[3];
-
-							try {
-								String resposta = incluiTurma(codInclui, nome);
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						case "turma": // Busca de turma
-							int codBusca = Integer.parseInt(arrayReq[2]);
-
-							try {
-								String resposta = buscaTurma(codBusca);
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						case "turmas": // Listagem de alunos
-							try {
-								String resposta = listaTurmas();
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						case "apagaturma": // Exclusão de turma
-							int codExclui = Integer.parseInt(arrayReq[2]);
-
-							try {
-								String resposta = apagaTurma(codExclui);
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						default:
-							System.out.println("Comando Invalido!");
-							break;
-						}
-
-						if ("FIM".equals(requisicao)) {
-							break;
-						}
-					}
-					entrada.close();
-					saida.close();
-					client.close();
-
-				} catch (Exception e) {
-					// TODO: handle exception
-				}
-				server.close();
+			server = new ServerSocket(1237);
+			System.out.println("DBTurmas aguardando conexão...");
+			while (shouldRun) {
+				Socket client = server.accept();
+				System.out.println("Conexão estabelecida com " + client.getInetAddress().getHostName() + " na porta " + client.getPort());
+				AtendenteTurmas atendente = new AtendenteTurmas(client, this);
+				atendente.start();
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
-
 	}
 
 	// Método para cadastro de turma
@@ -136,7 +74,6 @@ public class DBTurmas {
 			commit.close();
 
 			resposta = gson.toJson(CodigosRetorno.requisicaoOK);
-			// resposta = ("{codRetorno: 0, descricaoRetorno: Requisicao OK}");
 		} else {
 			resposta = gson.toJson(CodigosRetorno.erroJaCadastrado);
 		}
@@ -182,21 +119,24 @@ public class DBTurmas {
 	// Método para listagem de TODOS as turmas
 	public static String listaTurmas() throws Exception {
 		BufferedReader leitor = new BufferedReader(new FileReader("class.data"));
+		Turma t;
+		ArrayList<Turma> turmas = new ArrayList<Turma>();
+		Gson gson = new Gson();
 		String linha = "";
-		String resposta = ("{   \"turmas\": [   ");
 
-		try {
-			while (true) {
+		while (true) {
+			try {
 				linha = leitor.readLine();
-				if (linha == null)
-					break;
-				resposta += (linha + ",  ");
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			// System.out.println("FIM DO ARQUIVO!");
+			if (linha == null)
+				break;
+			t = gson.fromJson(linha, Turma.class);
+			turmas.add(t);
 		}
 
-		resposta += ("   ]   }");
+		String resposta = gson.toJson(turmas);
 
 		leitor.close();
 		return resposta;
@@ -286,7 +226,7 @@ public class DBTurmas {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 		leitorAlunos.close();
 	}

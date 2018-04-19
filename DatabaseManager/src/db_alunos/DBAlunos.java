@@ -1,8 +1,9 @@
 package db_alunos;
 
 import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.net.Socket;
+import java.net.ServerSocket;
+import java.util.ArrayList;
 import com.google.gson.Gson;
 
 import db_turmas.*;
@@ -10,104 +11,37 @@ import config.*;
 
 public class DBAlunos {
 
+	ServerSocket server;
+	boolean shouldRun = true;
+
 	public static void main(String[] args) {
+
 		File arqAlunos = new File("student.data");
-		try {
-			if (!arqAlunos.exists()) {
+		if (!arqAlunos.exists()) {
+			try {
 				arqAlunos.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		new DBAlunos();
+	}
+
+	public DBAlunos() {
+		try {
+			server = new ServerSocket(1236);
+			System.out.println("DBAlunos aguardando conexão...");
+			while (shouldRun) {
+				Socket client = server.accept();
+				System.out.println("Conexão estabelecida com " + client.getInetAddress().getHostName() + " na porta "
+						+ client.getPort());
+				AtendenteAlunos atendente = new AtendenteAlunos(client, this);
+				atendente.start();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		try {
-			while (true) {
-				ServerSocket server = new ServerSocket(1236);
-				System.out.println("DBAlunos aguardando conexão...");
-				try {
-					Socket client = server.accept();
-					System.out.println("Conexão estabelecida!");
-					BufferedReader entrada = new BufferedReader(new InputStreamReader(client.getInputStream()));
-					PrintStream saida = new PrintStream(client.getOutputStream());
-					String requisicao;
-
-					while (true) {
-						requisicao = entrada.readLine();
-						String[] arrayReq = requisicao.split("/");
-						String tipoRequisicao = arrayReq[1].toLowerCase();
-
-						switch (tipoRequisicao) {
-
-						case "incluialuno": // Inclusão de aluno
-							int codInclui = Integer.parseInt(arrayReq[2]);
-							String nome = arrayReq[3];
-							String[] arrayReqTurmas = arrayReq[4].split(",");
-							ArrayList<Integer> lista = new ArrayList<Integer>();
-							for (String i : arrayReqTurmas) {
-								lista.add(Integer.parseInt(i));
-							}
-
-							try {
-								String resposta = incluiAluno(codInclui, nome, lista);
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						case "aluno": // Busca de aluno
-							int codBusca = Integer.parseInt(arrayReq[2]);
-
-							try {
-								String resposta = buscaAluno(codBusca);
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						case "alunos": // Listagem de alunos
-							try {
-								String resposta = listaAlunos();
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						case "apagaaluno": // Exclusão de aluno
-							int codExclui = Integer.parseInt(arrayReq[2]);
-
-							try {
-								String resposta = apagaAluno(codExclui);
-								saida.println(resposta);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							break;
-
-						default:
-							System.out.println("Comando Invalido!");
-							break;
-						}
-
-						if ("FIM".equals(requisicao)) {
-							break;
-						}
-					}
-					client.close();
-					entrada.close();
-					saida.close();
-
-				} catch (Exception e) {
-					// TODO: handle exception
-				}
-				server.close();
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-
 	}
 
 	// Método para cadastro de aluno
@@ -209,21 +143,24 @@ public class DBAlunos {
 	// Método para listagem de TODOS os alunos
 	public static String listaAlunos() throws Exception {
 		BufferedReader leitor = new BufferedReader(new FileReader("student.data"));
+		Aluno a;
+		ArrayList<Aluno> alunos = new ArrayList<Aluno>();
+		Gson gson = new Gson();
 		String linha = "";
-		String resposta = ("{   \"alunos\": [   ");
 
-		try {
-			while (true) {
+		while (true) {
+			try {
 				linha = leitor.readLine();
-				if (linha == null)
-					break;
-				resposta += (linha + ",  ");
+			} catch (EOFException e) {
+				// FIM DO ARQUIVO!
 			}
-		} catch (Exception e) {
-			// System.out.println("FIM DO ARQUIVO!");
+			if (linha == null)
+				break;
+			a = gson.fromJson(linha, Aluno.class);
+			alunos.add(a);
 		}
 
-		resposta += ("   ]   }");
+		String resposta = gson.toJson(alunos);
 
 		leitor.close();
 		return resposta;
@@ -286,4 +223,5 @@ public class DBAlunos {
 		leitor.close();
 		return resposta;
 	}
+
 }

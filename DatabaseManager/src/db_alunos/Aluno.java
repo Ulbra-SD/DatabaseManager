@@ -38,5 +38,4 @@ public class Aluno {
 		this.listaDeTurmas = listaDeTurmas;
 	}
 	
-	
 }
